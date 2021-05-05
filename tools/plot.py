@@ -1,0 +1,93 @@
+import operator
+import functools as ft 
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+_path = os.path.abspath(__file__) 
+path = './plotResults/'
+
+#PLOT VAD
+#plt.plot(model.T, vad.mPao_ref_v)
+def runPlot(model, vad):
+
+    print("\rPlotting...", end='')
+    plt.figure(figsize=(5,5))
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Pressão(mmHg)')
+
+    plt.plot(model.T, vad.mPao_v, label='Pressão na aorta')
+    plt.plot(model.T, vad.mPao_ref_v, 'r--',label='Valor de referência de pressão na aorta')
+    plt.legend()
+    plt.savefig('./plotResults/fig1.png')
+
+    plt.figure(figsize=(5,5))
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Pressão(mmHg)')
+
+    plt.plot(model.T, model.Pao,label='Pressão na aorta')
+    plt.plot(model.T, np.dot(vad.deltaS,np.max(model.Pao)),label='Instante de ejeção do ventrículo esquerdo')
+    plt.plot(model.T, np.dot(vad.deltaPVAD,np.max(model.Pao)),'g--',label='Instante de ejeção do DAV')
+    plt.legend()
+    plt.savefig('./plotResults/fig2.png', bbox_inches='tight')
+
+    plt.figure(figsize=(5,5))
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Volume(ml)')
+
+    plt.plot(model.T, vad.Pee, label='Pressão de ejeção')
+    plt.legend()
+    plt.savefig('./plotResults/fig3.png', bbox_inches='tight')
+
+    #plt.plot(model.Vve, vad.Ri)
+    #plt.title('Modelo de colapso ventricular; Resistência de entrada do DAV em função do volume ventricular')
+    #plt.show()
+
+    #plt.plot(model.Pao)
+    #plt.title('Modelo de colapso ventricular; Resistência de entrada do DAV em função do volume ventricular')
+    #plt.show()
+    #PLOT
+
+    plt.figure(figsize=(5,5))
+    plt.plot(model.T, model.Pve)
+    plt.plot(model.T, model.Pao, 'r--')
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Pressão(mmHg)')
+    plt.savefig('./plotResults/fig4.png', bbox_inches='tight')
+
+    plt.figure(figsize=(5,5))
+    plt.plot(model.Vve)
+    plt.savefig(path + 'fig5.png', bbox_inches='tight')
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Volume(ml)')
+
+    plt.figure(figsize=(5,5))
+    plt.plot(model.Qa)
+    plt.savefig('./plotResults/fig6.png', bbox_inches='tight')
+
+    plt.figure(figsize=(5,5))
+    plt.xlabel('Tempo(s)')
+    plt.ylabel('Fluxo de bombeamento no DAV (ml/s)')
+
+    plt.plot(model.T,vad.Qi,label='Entrada')
+    plt.plot(model.T,vad.Qo,'r--',label='Saída')
+    plt.legend()
+
+    plt.savefig('./plotResults/fig7.png', bbox_inches='tight')
+
+    plt.figure(figsize=(5,5))
+    plt.plot(model.Pve, model.Vve)
+    plt.title('')
+    plt.savefig('./plotResults/fig8.png', bbox_inches='tight')
+
+
+    print('\rPlot is ready at ' + path)
+
+
+def runCSV(model, vad):
+    import csv  
+    with open(path + 'output.csv', 'w', encoding='utf-8', newline=''    ) as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', lineterminator='\n')
+        writer.writerow(['Time (ms)', 'Pao', 'Qa', 'Vve', 'Pas', 'Pae', 'Pve'])
+        
+        for i in range(len(model.Pao)):
+            writer.writerow(np.around([(i + 1)/10 , model.Pao[i],model.Qa[i], model.Vve[i], model.Pas[i], model.Pae[i], model.Pve[i]], 3))
